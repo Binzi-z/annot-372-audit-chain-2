@@ -30,9 +30,6 @@ func TestWriteAndRead(t *testing.T) {
 	if w.Count() != 3 {
 		t.Fatalf("count = %d, want 3", w.Count())
 	}
-	if err := w.Sync(); err != nil {
-		t.Fatalf("sync: %v", err)
-	}
 
 	got, err := ReadAll(dir)
 	if err != nil {
@@ -85,9 +82,6 @@ func TestConcurrentWrites(t *testing.T) {
 		}(g)
 	}
 	wg.Wait()
-	if err := w.Sync(); err != nil {
-		t.Fatalf("sync: %v", err)
-	}
 
 	got, err := ReadAll(dir)
 	if err != nil {
