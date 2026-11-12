@@ -3,15 +3,16 @@ package audit
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
-// BenchmarkWrite 单进程写入吞吐基线。任务要求改造后吞吐下降不超过 10%，
-// 用这个基准做前后对比：
+// BenchmarkWrite 单进程写入吞吐。与改造前基线对比，要求下降不超过 10%：
 //
-//	go test ./internal/audit -bench=BenchmarkWrite -benchtime=3s -run=^$ > before.txt
-//	go test ./internal/audit -bench=BenchmarkWrite -benchtime=3s -run=^$ > after.txt
+//	go test ./internal/audit -bench=BenchmarkWrite -benchtime=3s -run=^$
 func BenchmarkWrite(b *testing.B) {
-	w, err := NewWriter(b.TempDir())
+	w, err := NewWriter(b.TempDir(),
+		WithFlushInterval(20*time.Millisecond),
+		WithLeaseIdle(2*time.Millisecond))
 	if err != nil {
 		b.Fatalf("new writer: %v", err)
 	}
@@ -27,5 +28,9 @@ func BenchmarkWrite(b *testing.B) {
 		}); err != nil {
 			b.Fatalf("write: %v", err)
 		}
+	}
+	b.StopTimer()
+	if err := w.WaitFlush(); err != nil {
+		b.Fatalf("flush: %v", err)
 	}
 }

@@ -1,0 +1,14 @@
+goos: windows
+goarch: amd64
+pkg: old-audit/internal/audit
+cpu: 12th Gen Intel(R) Core(TM) i5-12500H
+BenchmarkWrite-16    	  395229	      8377 ns/op
+BenchmarkWrite-16    	  474900	      8400 ns/op
+BenchmarkWrite-16    	  450954	      8558 ns/op
+BenchmarkWrite-16    	  480084	      8226 ns/op
+BenchmarkWrite-16    	  512809	      9337 ns/op
+BenchmarkWrite-16    	  386985	     10012 ns/op
+BenchmarkWrite-16    	  394612	     11187 ns/op
+BenchmarkWrite-16    	  293618	     11815 ns/op
+PASS
+ok  	old-audit/internal/audit	33.854s

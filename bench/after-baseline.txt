@@ -1,0 +1,14 @@
+goos: windows
+goarch: amd64
+pkg: annot-audit/internal/audit
+cpu: 12th Gen Intel(R) Core(TM) i5-12500H
+BenchmarkWrite-16    	 1000000	      3469 ns/op
+BenchmarkWrite-16    	 1000000	      4503 ns/op
+BenchmarkWrite-16    	 1000000	      5147 ns/op
+BenchmarkWrite-16    	 1000000	      3772 ns/op
+BenchmarkWrite-16    	 1000000	      4280 ns/op
+BenchmarkWrite-16    	 1000000	      4481 ns/op
+BenchmarkWrite-16    	 1000000	      3619 ns/op
+BenchmarkWrite-16    	 1000000	      4003 ns/op
+PASS
+ok  	annot-audit/internal/audit	37.386s

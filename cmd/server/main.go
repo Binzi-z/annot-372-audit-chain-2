@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"annot-audit/internal/audit"
@@ -25,11 +27,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("init writer: %v", err)
 	}
-	defer w.Close()
 
 	mux := http.NewServeMux()
 
-	// POST /events  写入一条审计事件
+	// POST /events  写入一条审计事件；GET /events 查询
 	mux.HandleFunc("/events", func(rw http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
@@ -74,11 +75,29 @@ func main() {
 		writeJSON(rw, http.StatusOK, map[string]any{"ok": true, "wrote": w.Count()})
 	})
 
-	log.Printf("audit service listening on %s, data dir %q", *addr, *dataDir)
-	if err := http.ListenAndServe(*addr, mux); err != nil {
-		log.Printf("server stopped: %v", err)
-		os.Exit(1)
+	srv := &http.Server{Addr: *addr, Handler: mux}
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		log.Printf("audit service listening on %s, data dir %q", *addr, *dataDir)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("server error: %v", err)
+			os.Exit(1)
+		}
+	}()
+
+	<-stop
+	log.Printf("shutting down, flushing audit events…")
+	ctx, cancel := contextWithTimeout()
+	defer cancel()
+	_ = srv.Shutdown(ctx)
+	if err := w.WaitFlush(); err != nil {
+		log.Printf("flush error: %v", err)
 	}
+	if err := w.Close(); err != nil {
+		log.Printf("close error: %v", err)
+	}
+	log.Printf("stopped cleanly")
 }
 
 func writeJSON(rw http.ResponseWriter, code int, v any) {
